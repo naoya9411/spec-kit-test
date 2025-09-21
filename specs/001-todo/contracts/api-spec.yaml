@@ -1,0 +1,294 @@
+openapi: 3.0.3
+info:
+  title: TODO API
+  description: シンプルなTODOアプリケーションのRESTful API
+  version: 1.0.0
+  contact:
+    name: TODO App Development Team
+    
+servers:
+  - url: http://localhost:8080/api/v1
+    description: 開発環境
+  - url: https://api.todoapp.example.com/v1
+    description: 本番環境
+
+paths:
+  /todos:
+    get:
+      summary: TODOリスト取得
+      description: 全てのTODOアイテムをリストで取得します
+      operationId: getTodos
+      responses:
+        '200':
+          description: TODOリストの取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TODO'
+                  total:
+                    type: integer
+                    description: TODOアイテムの総数
+                    example: 5
+        '500':
+          description: サーバー内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+    post:
+      summary: TODO作成
+      description: 新しいTODOアイテムを作成します
+      operationId: createTodo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTODORequest'
+      responses:
+        '201':
+          description: TODO作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TODO'
+        '400':
+          description: 不正なリクエスト（バリデーションエラー）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+              examples:
+                empty_title:
+                  summary: 空のタイトル
+                  value:
+                    message: "title cannot be empty"
+                    code: "VALIDATION_ERROR"
+                title_too_long:
+                  summary: タイトルが長すぎる
+                  value:
+                    message: "title cannot exceed 100 characters"
+                    code: "VALIDATION_ERROR"
+        '500':
+          description: サーバー内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /todos/{id}:
+    get:
+      summary: TODO詳細取得
+      description: 指定されたIDのTODOアイテムを取得します
+      operationId: getTodoById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TODOのID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: TODO取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TODO'
+        '404':
+          description: TODOが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: サーバー内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+    put:
+      summary: TODO更新
+      description: 指定されたIDのTODOアイテムを更新します
+      operationId: updateTodo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TODOのID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTODORequest'
+      responses:
+        '200':
+          description: TODO更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TODO'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '404':
+          description: TODOが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: サーバー内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+    delete:
+      summary: TODO削除
+      description: 指定されたIDのTODOアイテムを削除します
+      operationId: deleteTodo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TODOのID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: TODO削除成功（レスポンスボディなし）
+        '404':
+          description: TODOが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: サーバー内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+components:
+  schemas:
+    TODO:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: TODOの一意識別子
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          maxLength: 100
+          description: TODOのタイトル
+          example: "食材を買いに行く"
+        completed:
+          type: boolean
+          description: 完了状態
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時 (ISO 8601)
+          example: "2025-09-21T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時 (ISO 8601)
+          example: "2025-09-21T10:00:00Z"
+
+    CreateTODORequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: TODOのタイトル
+          example: "食材を買いに行く"
+
+    UpdateTODORequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: TODOのタイトル
+          example: "食材を買いに行く（更新済み）"
+        completed:
+          type: boolean
+          description: 完了状態
+          example: true
+
+    APIError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: エラーメッセージ
+          example: "todo not found"
+        code:
+          type: string
+          description: エラーコード
+          example: "NOT_FOUND"
+        details:
+          type: object
+          description: 追加のエラー詳細情報
+          additionalProperties: true
+
+  responses:
+    NotFound:
+      description: リソースが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIError'
+    
+    ValidationError:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIError'
+    
+    InternalServerError:
+      description: サーバー内部エラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIError'
+
+tags:
+  - name: todos
+    description: TODO管理操作

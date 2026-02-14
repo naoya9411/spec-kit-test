@@ -66,6 +66,7 @@ export function TodoApp() {
         />
       </main>
       <TodoEditModal
+        key={editingTodo?.id}
         todo={editingTodo}
         onClose={() => setEditingTodo(null)}
         onSave={saveTodo}

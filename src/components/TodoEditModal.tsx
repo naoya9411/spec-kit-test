@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { Todo } from '@/types/todo';
 
@@ -9,16 +9,8 @@ interface TodoEditModalProps {
 }
 
 export function TodoEditModal({ todo, onClose, onSave }: TodoEditModalProps) {
-  const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
-
-  useEffect(() => {
-    if (todo) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTitle(todo.title);
-      setPriority(todo.priority);
-    }
-  }, [todo]);
+  const [title, setTitle] = useState(todo?.title || '');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>(todo?.priority || 'medium');
 
   if (!todo) return null;
 

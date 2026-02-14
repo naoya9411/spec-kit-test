@@ -14,6 +14,7 @@ export function TodoEditModal({ todo, onClose, onSave }: TodoEditModalProps) {
 
   useEffect(() => {
     if (todo) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(todo.title);
       setPriority(todo.priority);
     }
